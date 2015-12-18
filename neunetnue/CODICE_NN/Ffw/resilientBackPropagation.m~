@@ -1,0 +1,88 @@
+function [W learnParams ] = resilientBackPropagation(W,gradW,learnParams)
+%   function [W learnParams ] = resilientBackPropagation(W,gradW,learnParams)
+
+   %deltaInit = 0.1;
+   if (isfield(learnParams,'RBPParam'))
+       RBPParam=learnParams.RBPParam;
+       deltaInit=RBPParam.deltaInit;
+       deltaMin  = RBPParam.deltaMin;
+       deltaMax  = RBPParam.deltaMax;
+       etaP      = 1.1;
+   etaN      = 0.9;
+   else
+   deltaInit = 1E-03;
+   end
+   %deltaMin  = 1E-06;
+   %deltaMin  = 1E-10;
+   
+   deltaMin  = 1E-20;
+   deltaMax  = 50;
+%    etaP      = 1.6;
+%    etaN      = 0.6;
+   etaP      = 1.1;
+   etaN      = 0.9;
+%    
+   numParamMatrices=length(W); 
+   if (isfield(learnParams,'deltaRBP'))
+%        delta_RBP = params.delta_RBP;    
+%        grad_prec = params.grad_prec;
+         deltaRBP=learnParams.deltaRBP;
+         prevGrad=learnParams.prevGrad;
+   else
+%        for i=1:numParams
+%            w_index = (i-1)*2+1;
+%            delta_RBP{i} = ones(size(varargin{w_index})) * deltaInit; 
+%            grad_prec{i} = zeros(size(varargin{w_index}));
+%        end
+         
+         prevGrad=cell(1,numParamMatrices);
+         deltaRBP=cell(1,numParamMatrices);
+         for i=1:numParamMatrices
+             deltaRBP{i}=ones(size(W{i})) * deltaInit;
+             prevGrad{i}=zeros(size(W{i}));
+         end
+        setLearnParams(learnParams,'deltaRBP',deltaRBP);
+        setLearnParams(learnParams,'prevGrad',prevGrad);
+
+   end
+    
+%    for i=1:numParams
+    for i=1:numParamMatrices
+        
+%         w_index = (i-1)*2+1;
+%         g_index = i*2;        
+%         
+%         W      = varargin{w_index};
+%         c_grad = varargin{g_index};
+%         
+%         c_delta_RBP = delta_RBP{i};
+%         c_grad_prec = grad_prec{i};
+        c_W=W{i};
+        c_grad=gradW{i};
+        c_grad_prec=prevGrad{i};
+        c_delta_RBP=deltaRBP{i};
+%        dot_grad    = c_grad .* c_grad_prec;
+        dot_grad= c_grad .* c_grad_prec;
+        ind_gt_0    = find(dot_grad > 0);
+        ind_le_0    = find(dot_grad < 0);
+        ind_eq_0    = find(dot_grad == 0);
+        
+        c_delta_RBP(ind_gt_0) = min(etaP*c_delta_RBP(ind_gt_0),deltaMax);        
+        c_grad_prec(ind_gt_0) = c_grad(ind_gt_0);        
+        c_W(ind_gt_0)           = c_W(ind_gt_0) - sign(c_grad(ind_gt_0)) .* c_delta_RBP(ind_gt_0);
+        
+        c_delta_RBP(ind_le_0) = max(etaN*c_delta_RBP(ind_le_0),deltaMin);
+        c_grad_prec(ind_le_0) = 0;
+        
+        c_grad_prec(ind_eq_0) = c_grad(ind_eq_0);
+        c_W(ind_eq_0)           = c_W(ind_eq_0) - sign(c_grad(ind_eq_0)) .* c_delta_RBP(ind_eq_0);
+        
+                     
+        W{i}        = c_W;        
+%         params.delta_RBP{i} = c_delta_RBP;
+%         params.grad_prec{i} = c_grad_prec;
+        learnParams.deltaRBP{i}=c_delta_RBP;
+        learnParams.prevGrad{i}=c_grad_prec;
+    end
+
+return;

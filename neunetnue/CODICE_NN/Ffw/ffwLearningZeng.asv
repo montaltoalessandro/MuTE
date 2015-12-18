@@ -1,0 +1,89 @@
+function [ffwNet learnParams E_T RMSE_T E_V RMSE_V]=ffwLearningZeng(ffwNet,learnParams,debug)
+%function [ffwNet RSE_T RMSE_T RSE_V RMSE_V]=ffwLearning(ffwNet,learnParams,debug)
+	if nargin<3
+		if isfield (learnParams,'debug')
+			debug = learnParams.debug;
+		else
+			debug = 0;
+		end
+	end
+
+	maxEpochs=learnParams.maxEpochs;
+
+	%% Learning loop
+	E_T                         = zeros(1,maxEpochs);
+	RMSE_T                      = zeros(1,maxEpochs);
+
+	E_V                         = zeros(1,maxEpochs);
+	RMSE_V                      = zeros(1,maxEpochs);
+
+	learnParams.actFunctions    = ffwNet.actFunctions;
+	learningAlgorithm           = learnParams.learningAlgorithm;
+	WLength=length(ffwNet.W);
+	%BLength=length(ffwNet.B);
+
+	if isfield(learnParams,'wLayersToBeUpdated')
+		wLayersToBeUpdated=learnParams.wLayersToBeUpdated;
+	else
+		wLayersToBeUpdated=[1:WLength];
+	end
+	WLength=length(wLayersToBeUpdated);
+	if learnParams.batch==1
+        if (isfield(learnParams,'setInput') && learnParams.setInput == 1)
+            for i=1:maxEpochs
+			
+                [derI]=computeGradient(ffwNet, learnParams,'compInputGradient',1,'compWeightGradient',0);
+                [ffwNet learnParams]= updateInput(ffwNet,learnParams,learningAlgorithm,derI);
+%                 learnParams.trainSet = learnParams.input;
+                [E_T(i) RMSE_T(i) E_V(i) RMSE_V(i)]       =  computePerformaceZeng(ffwNet,learnParams);
+
+                if debug==1
+                    fprintf('GradEpochs %4d/%d | E_T: %20.20g | RMS_T: %20.20g | E_V: %6.3f | RMS_V: %6.3f\n',i,maxEpochs,E_T(i), RMSE_T(i), E_V(i), RMSE_V(i));
+                end
+            end
+        else
+            for i=1:maxEpochs
+
+                [gradW gradB]       = computeGradient(ffwNet,learnParams);
+                [ffwNet learnParams]= weightUpdate(ffwNet,learnParams,wLayersToBeUpdated,WLength,learningAlgorithm,gradW,gradB);
+
+                [E_T(i) RMSE_T(i) E_V(i) RMSE_V(i)]       =  computePerformace(ffwNet,learnParams);
+
+                if debug==1
+                    fprintf('GradEpochs %4d/%d | E_T: %20.20g | RMS_T: %20.20g | E_V: %6.3f | RMS_V: %6.3f\n',i,maxEpochs,E_T(i), RMSE_T(i), E_V(i), RMSE_V(i));
+                end
+            end
+        end
+	else
+		N=size(learnParams.trainSet,1);
+		for i=1:maxEpochs
+			for n=1:N;
+				[gradW gradB]           = computeGradient(ffwNet,learnParams,'pointIndexes',n);
+				[ffwNet learnParams]	= weightUpdate(ffwNet,learnParams,wLayersToBeUpdated,WLength,learningAlgorithm,gradW,gradB);
+			end
+			[E_T(i) RMSE_T(i) E_V(i) RMSE_V(i)]       =  computePerformace(ffwNet,learnParams);
+			if debug==1
+				fprintf('Epochs %4d | E_T: %6.10f | RMS_T: %6.3f | E_V: %6.3f | RMS_V: %6.3f\n',i,E_T(i), RMSE_T(i), E_V(i), RMSE_V(i));
+			end
+		end
+end
+
+return;
+function [ffwNet learnParams]= weightUpdate(ffwNet,learnParams,wLayersToBeUpdated,WLength,learningAlgorithm,gradW,gradB)
+    W=[ffwNet.W(wLayersToBeUpdated) ffwNet.B(wLayersToBeUpdated)];
+    gradW=gradW(wLayersToBeUpdated);
+    gradB=gradB(wLayersToBeUpdated); 
+            
+    [W learnParams]     = learningAlgorithm(W, [gradW gradB],learnParams);
+    ffwNet.W(wLayersToBeUpdated)=W(1,1:WLength);
+    ffwNet.B(wLayersToBeUpdated)=W(1,WLength+1:end);
+return;
+
+function [ffwNet learnParams]= updateInput(ffwNet,learnParams,learningAlgorithm,derI)
+
+    learnParams.gradI{1} = derI;
+    input{1} = learnParams.input;
+    [newInput  learnParams] = learningAlgorithm(input, learnParams.gradI,learnParams);
+    learnParams.input = newInput{1};
+    
+return;

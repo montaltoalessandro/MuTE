@@ -1,0 +1,11 @@
+function [params varargout] = gradientDescent(ffwNet, learnParams, gradW,gradB)
+% [params varargout] = gradientDescent(params, varargin)
+
+    
+    eta = learnParams.;
+    numOfWeigthLayer=ffwNet.numOfweightLayers; 
+    for i=1:numOfWeightLayer
+        ffwNet.W      
+    end
+
+return;
