@@ -2,14 +2,16 @@ function mute
 
 %%%%% main gui for the MuTE toolbox%%%%%%%%%%%
 
- %%%%% last modified: 18-12-2015 by Frederik Van de Steen
+ %%%%% last modified: 27-01-2016 by Frederik Van de Steen
 
 close all
 clc
 
-main_fig=figure('Units','normalized','Visible','off','Position',[0.1,0.1,0.3,0.5],'Color',[116  175  173] ./ 255,'name','MuTE parameters and methods','Menubar','none','NumberTitle','off','Tag','mute_main');
+%make main window
+main_fig=figure('Units','normalized','Visible','off','Position',[0.1,0.1,0.3,0.5],'Color',[116  175  173] ./ 255,'name','MuTE main','Menubar','none','NumberTitle','off','Tag','mute_main');
 method = mute_config();
-% assignin('caller', 'method', mute_config()) 
+
+%%make uicontrols for main-mute window
 uicontrol('Units','normalized','Style','text','String','Welcome to the MuTE toolbox','Fontsize',16,...
     'Position',[0.05,0.935,0.90,0.037],'BackgroundColor',[116  175  173] ./ 255);
 
@@ -69,13 +71,13 @@ tmp = findobj('Tag','gen_param_check');
 setappdata(tmp,'gen_check',0);
  
 
-logo = imread(which('MuTE_logo.png'));
+% logo = imread(which('MuTE_logo.png'));
 % web_mute = 'http://mutetoolbox.guru/';
 % h.web = uicontrol('Units','normalized','Style','pushbutton',...
 %     'Position',[0.1,0.02,0.18,0.02],'callback',@(o,e)web(web_mute),'BackgroundColor',[116  175  173] ./ 255);
 
 h.binnue_execute_ = uicontrol('Units','normalized','Style','pushbutton',...
-    'Position',[0.413,0.05,0.18,0.05],'callback',@execute_callback,'CData',logo,'BackgroundColor',[217  133  59]./255);
+    'Position',[0.413,0.05,0.18,0.05],'callback',@execute_callback,'String','Execute','BackgroundColor',[217  133  59]./255,'FontSize',14);
 h.binnue_generate_ = uicontrol('Units','normalized','Style','pushbutton',...
     'Position',[0.1,0.05,0.18,0.05],'callback',{@generate_callback},'String','generate script','BackgroundColor',[217  133  59]./255);
 h.main_quit    = uicontrol('Units','normalized','Style','pushbutton',...
@@ -85,6 +87,8 @@ set(h.main_quit,'callback',{@quit_fcn,h});
 
 
 set(main_fig,'Visible','on')
+
+%%%callback functions for uicontrols
 
 function generate_callback(hObject,eventdata,handles)
    parentfig = get(hObject,'Parent');
@@ -112,9 +116,9 @@ method.which = which;
    end
 cd(method.gen_param.folder)
 
-delete('mute_analysis_scripts.m')
+t = clock;
 
-mute_write_script(method)
+mute_write_script(method,[num2str(t(1)) '_' num2str(t(2)) '_' num2str(t(3)) '_' num2str(t(4)) 'h_' num2str(t(5)) 'min'])
 disp(['script has been written, check:' method.gen_param.folder])
 cd(method.gen_param.folder)
 close
@@ -156,10 +160,11 @@ method.which = which;
        mute_errorscreen('please specify the parameters of at least one method')
        return
    end
-
-mute_write_script(method)
+t = clock;
 cd(method.gen_param.folder)
-mute_analysis_scripts
+mute_write_script(method,[num2str(t(1)) '_' num2str(t(2)) '_' num2str(t(3)) '_' num2str(t(4)) 'h_' num2str(t(5)) 'min'])
+% set(gcf,'pointer','watch');
+run(['mute_analysis_' num2str(t(1)) '_' num2str(t(2)) '_' num2str(t(3)) '_' num2str(t(4)) 'h_' num2str(t(5)) 'min'])
 disp(['script has been written, check:' method.gen_param.folder])
 
 

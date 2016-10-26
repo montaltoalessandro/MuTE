@@ -24,7 +24,7 @@ function [threshold] = evalNeuNetUeEntropySurrogates(data,idTargets,idDrivers,se
                     dataShifted(currIdDrivers(driv),:)      = driverShiftedMtx{1,driv}(:,k)';%fix(6*rand(1,nPoints)) + 1
                 end
 %                 entropyTerm                  = evalEntropyFun(dataShifted,idTargets(1,i),{secondIdConditionalTerm{1,i}});
-                [secondNetwork,entropyTerm]     = evalPredErrNNUe(dataShifted,methodParams,{secondIdConditionalTerm{1,i}},i);
+                [secondNetwork,entropyTerm]     = evalPredErrNNUe(dataShifted,methodParams,{secondIdConditionalTerm{1,i}},1);
                 tmpValTransferEntropy(1,k)   = firstEntropyTerm(1,i) - entropyTerm;
             end
             
@@ -50,7 +50,7 @@ function [threshold] = evalNeuNetUeEntropySurrogates(data,idTargets,idDrivers,se
                     dataShifted(currIdDrivers(driv),:)      = driverShiftedMtx{1,driv}(:,k)';
                 end
 %                 entropyTerm                  = evalEntropyFun(dataShifted,idTargets(1,i),{secondIdConditionalTerm{1,i}});
-                [secondNetwork,entropyTerm]     = evalPredErrNNUe(dataShifted,methodParams,secondIdConditionalTerm,i);
+                [secondNetwork,entropyTerm]     = evalPredErrNNUe(dataShifted,methodParams,{secondIdConditionalTerm{1,i}},1);
                 tmpValTransferEntropy(1,k)   = firstEntropyTerm(1,i) - entropyTerm;
             end
             threshold(1,i)            = prctile(tmpValTransferEntropy,100*(1-alphaPercentile));

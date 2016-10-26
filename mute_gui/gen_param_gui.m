@@ -1,28 +1,26 @@
 function[]= gen_param_gui(gen_def)
  %%%%%general parameters and data pop-up window for the MuTE gui
  
- %%%%% last modified: 18-12-2015 by Frederik Van de Steen
+ %%%%% last modified: 01-04-2016 by Frederik Van de Steen
 
- 
-%  gen_def.samplingRate.value = '1';
-% gen_def.samplingRate.text = '[samplingRate should be greater than 1 if data should be downsampled]';
-% 
-% 
-% gen_def.pointsToDiscard.value = '0';
-% gen_def.pointsToDiscard.text = 'pointsToDiscard allows to discard a certain amount of points, starting from the last one';
-% gen_def.channels.value = '1:2';
-% gen_def.channels.text = 'channels is useful to select a subset of variables for a certain analysis. It is highly recommended to enter the series id from sorted in ascending order from left to right.';
-% 
-% gen_def.autoPairwiseTarDriv.value = '[1 1 1 1 1 1 1 1]';
-% gen_def.autoPairwiseTarDriv.text = 'autoPairwiseTarDriv takes into account the opportunity to investigate all the pair wise combinations of the variables chosen by means of channels. autoPairwiseTarDriv is then a vector with either 0 or 1 entries. The methods order shown at the beginning of this section has to be preserved.';
-% 
-% gen_def.handPairwiseTarDriv.value = '[0 0 0 0 0 0 0 0]';
-% gen_def.handPairwiseTarDriv.text = 'handPairwiseTarDriv is useful to when the user already know how many targets is going to choose for the analysis. If the the number of targets can be reshaped in a square matrix then it is worth setting as 1 the entriy of handPairwiseTarDriv corresponding to the method choosen. handPairwiseTarDriv is then a vector with either 0 or 1 entries. The methods order shown at the beginning of this section has to be preserved.';
-% gen_def.numProcessors.value = '1';
-% gen_def.numProcessors.text = 'Set the number of processors you can use to run your experiments changing value to the following variable';
-% gen_def.dataExtension.value = '.mat';
-% gen_def.dataExtension.text = 'dataExtension defines the file extension';
+%%% put default values in def for the restore button  
+def = gen_def;
 
+%%check whether general parameters have been saved previously and put them
+%%in gen_def so they appear in the uicontrols
+    gen_param_check =  findobj('Tag','gen_param_check');
+    gen_check = get(gen_param_check,'Value');
+
+    if gen_check == 1;
+         main_mute =  findobj('Tag','mute_main');
+         gen_tmp = getappdata(main_mute,'gen_param');
+          field_names = fieldnames(gen_tmp);
+          field_names2 = fieldnames(gen_def);
+         for i = 1:length(fields(gen_tmp))
+   gen_def.(field_names2{i}).value = getfield(gen_tmp,field_names{i});
+         end
+    end
+%%% make figure and define colors    
 buttbackgroundvec = [116  175  173]./255;
 foregroundvec= [217  133  59]./255;
 textcol = [253  243  231]./255;
@@ -30,9 +28,9 @@ hfig_gen_param=figure('Units','normalized','Visible','off','Position',[0.5,0.1,0
 
 
 % hfig_gen_param = findobj('Tag','mute_gen_param');
-setappdata(hfig_gen_param,'def',gen_def);
+setappdata(hfig_gen_param,'def',def);
 
-%%%%here buttons and editable textboxex and static text is created
+%%%%here buttons and editable textboxex and static text are created
 
 z.gen_param_quit    = uicontrol('Units','normalized','Style','pushbutton',...
     'String','Quit','Position',[0.80,0.02,0.15,0.05],'FontSize',14,'BackgroundColor',foregroundvec);
@@ -42,33 +40,33 @@ set(z.gen_param_quit,'callback',{@gen_param_quit_fcn,z});
 z.gen_param_data    = uicontrol('Units','normalized','Style','pushbutton',...
     'String','select data folder','Position',[0.1,0.92,0.8,0.05],'FontSize',12,'BackgroundColor',foregroundvec);
 set(z.gen_param_data,'callback',{@gen_param_data_fcn,z});
-z.gen_param_data_text    = uicontrol('Units','normalized','Style','edit',...
+z.gen_param_data_text    = uicontrol('Units','normalized','Style','edit','String',gen_def.datafolder.value,...
     'Position',[0.1,0.85,0.8,0.05],'FontSize',12,'Tag','folder','BackgroundColor',foregroundvec, 'ForegroundColor',textcol);
  uicontrol('Units','normalized','Style','pushbutton',...
-    'Position',[0.92,0.92,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,'select the folder where the data is stored'});
+    'Position',[0.92,0.92,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,gen_def.datafolder.text});
 
-z.gen_param_data1    = uicontrol('Units','normalized','Style','edit',...
+z.gen_param_data1    = uicontrol('Units','normalized','Style','edit','String',gen_def.datafilename.value,...
     'Position',[0.1,0.66,0.2,0.05],'FontSize',12,'Tag','filename','BackgroundColor',foregroundvec, 'ForegroundColor',textcol);
 z.gen_param_data1_text    = uicontrol('Units','normalized','Style','text','String','dataFilename',...
     'Position',[0.1,0.73,0.2,0.05],'FontSize',12,'BackgroundColor',foregroundvec);
 uicontrol('Units','normalized','Style','pushbutton',...
-    'Position',[0.31,0.73,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,'dataFileName takes the part of the name file common to all the files involved in the analysis.'});
+    'Position',[0.31,0.73,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,gen_def.datafilename.text});
 
 
 
-z.gen_param_data2    = uicontrol('Units','normalized','Style','edit',...
+z.gen_param_data2    = uicontrol('Units','normalized','Style','edit','String',gen_def.datalabel.value,...
     'Position',[0.40,0.66,0.20,0.05],'FontSize',12,'Tag','datalabel','BackgroundColor',foregroundvec, 'ForegroundColor',textcol);
 z.gen_param_data2_text    = uicontrol('Units','normalized','Style','text','String','datalabel',...
     'Position',[0.40,0.73,0.20,0.05],'FontSize',12,'BackgroundColor',foregroundvec);
 uicontrol('Units','normalized','Style','pushbutton',...
-    'Position',[0.61,0.73,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,'dataLabel is useful to distinguish files. If no label is required set dataLabel as an empty string.'});
+    'Position',[0.61,0.73,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,gen_def.datalabel.text});
 
 z.gen_param_data3    = uicontrol('Units','normalized','Style','edit',...
     'String',gen_def.dataExtension.value,'Position',[0.7,0.67,0.20,0.05],'FontSize',12,'Tag','extension','BackgroundColor',foregroundvec,'ForegroundColor',textcol);
 z.gen_param_data3_text    = uicontrol('Units','normalized','Style','text','String','dataExtension',...
     'Position',[0.7,0.73,0.20,0.05],'FontSize',10,'BackgroundColor',foregroundvec);
 uicontrol('Units','normalized','Style','pushbutton',...
-    'Position',[0.91,0.73,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,'dataExtension defines the file extension'});
+    'Position',[0.91,0.73,0.03,0.05],'FontSize',12,'BackgroundColor',foregroundvec,'String','?','callback',{@info_callback,gen_def.dataExtension.text});
 
 z.gen_param_Srate    = uicontrol('Units','normalized','Style','edit',...
     'String',gen_def.samplingRate.value,'Position',[0.1,0.46,0.2,0.05],'FontSize',12,'Tag','Srate','BackgroundColor',foregroundvec,'ForegroundColor',textcol);
@@ -155,36 +153,58 @@ gen_param.ext = get(findobj('Tag','extension'),'String');
 gen_param.filename = get(findobj('Tag','filename'),'String');
 gen_param.datalabel = get(findobj('Tag','datalabel'),'String');
 gen_param.folder = get(findobj('Tag','folder'),'String');
-cd(gen_param.folder)
-delete('mute_analysis_scripts.m')
+if isempty(str2num(gen_param.datalabel))
+    gen_param.datalabel = '';
+end
+if length(dir([gen_param.folder '/' gen_param.filename '*'  '*' gen_param.ext])) == 0;
+    mute_errorscreen(['there are no files in the folder: ' gen_param.folder ' with filename:' gen_param.filename ' and or datalabel: ' gen_param.datalabel]);
+    main_gen = findobj('Tag','gen_param_check');
+    set(main_gen,'Value',0);
+setappdata(main_gen,'gen_check',0);
+else
+    disp([num2str(length(dir([gen_param.folder '/' gen_param.filename '*' gen_param.datalabel '*' gen_param.ext]))) ' files were selected.']);
+    disp('**************************************************************');
+    disp('WARNING: the computation is taking place in another workspace.');
+      disp('Please wait until ''...COMPUTATION DONE!'' is displayed.');
+    disp('**************************************************************');
 setappdata(main,'gen_param',gen_param);
 main_gen = findobj('Tag','gen_param_check');
 set(main_gen,'Value',1);
 setappdata(main_gen,'gen_check',1);
 
 close
+end
 
 
 function info_callback(~,~,x)
 mute_textscreen(x)
 
 function restore_Callback(hObject, eventdata, handles)
-parentfig = get(hObject,'Parent');;
+parentfig = get(hObject,'Parent');
 currentval = getappdata(parentfig,'def');
 h = findobj('Tag','Srate');
-set(h,'String',currentval.Srate);
+set(h,'String',currentval.samplingRate.value);
 h = findobj('Tag','points');
-set(h,'String',currentval.points);
+set(h,'String',currentval.pointsToDiscard.value);
 h = findobj('Tag','chans');
-set(h,'String',currentval.chans);
+set(h,'String',currentval.channels.value);
 h = findobj('Tag','auto');
-set(h,'String',currentval.auto);
+set(h,'String',currentval.autoPairwiseTarDriv.value);
 h = findobj('Tag','hand');
-set(h,'String',currentval.hand);
+set(h,'String',currentval.handPairwiseTarDriv.value);
 h = findobj('Tag','ncpu');
-set(h,'String',currentval.ncpu);
+set(h,'String',currentval.numProcessors.value);
+h = findobj('Tag','extension');
+set(h,'String',currentval.dataExtension.value);
+h = findobj('Tag','filename');
+set(h,'String',currentval.datafilename.value);
+h = findobj('Tag','datalabel');
+set(h,'String',currentval.datalabel.value);
+h = findobj('Tag','folder');
+set(h,'String',currentval.datafolder.value);
 
 
 
+     
 
 

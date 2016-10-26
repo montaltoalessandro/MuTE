@@ -12,8 +12,8 @@
 %     linnue                                                  
 %     nnue
 %     nnnue
+%     neunetue
 %     neunetnue
-% 
 % 
 %     Parameters to specify for each method
 % 
@@ -203,8 +203,8 @@
 
     %% Set MuTE folder path including also all the subfolders, for instance
     mutePath = ('/Users/alessandromontalto/Dropbox/MuTE_onlineVersion/'); % Adjust according to your path -> just an example: mutePath = '/home/alessandro/Scrivania/MuTE/';
-    cd(mutePath);
-    addpath(genpath(pwd));
+%     cd(mutePath);
+%     addpath(genpath(pwd));
     
     nameDataDir  = 'exampleToolbox/';
     
@@ -213,7 +213,7 @@
     
     % *****************************************************
     %% PAY ATTENTION: if you are able to run the parallel session you can set numProcessors > 1
-    numProcessors               = 2;
+    numProcessors               = 1;
     % *****************************************************
 
 
@@ -224,7 +224,7 @@
     cd(dataDir);
 
 %%  Defining the strings to load the data files
-    dataFileName    = 'realization_5000p';
+    dataFileName    = 'realization_5000p_1';
     dataLabel       = '';
     dataExtension   = '.mat';
     
@@ -257,9 +257,9 @@
     % *****************************************************
 
 %%  Defining the experiment parameters
-    channels             = 1:5;
+    channels             = 1:3;
     samplingRate         = 1;
-    pointsToDiscard      = 4500;
+    pointsToDiscard      = 0;
     listRealization      = dir([dataDir [dataFileName '*' dataLabel '*' dataExtension]]);
     autoPairwiseTarDriv  = [1 1 1 1 1 1 1 1];
     handPairwiseTarDriv  = [0 0 0 0 0 0 0 0];
