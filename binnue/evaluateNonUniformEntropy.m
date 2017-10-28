@@ -134,7 +134,7 @@ finalCandidatesMtx          = cell(1,numTargets);
         %% Step 4
     %     executing the surrogates test with the currEntropyMtx corresponding
     %     to the minimum entropy value
-        th(1,z)            = evalTestSurrogates(currEntropyMtx{1,idMin},minEntropyValues(1,z+1),alphaPercentile,numSurrogates);
+        th(1,z)            = evalTestSurrogates(currEntropyMtx{1,idMin},minEntropyValues(1,z),alphaPercentile,numSurrogates);
         %% Step 5
         if (condMInfo(1,z) > th(1,z))
             candidatesMtx(z,:)    = candidatesWhileCondition(idMin,:);
